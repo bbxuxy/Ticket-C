@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Staff Portal - Scanner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;700&family=Bungee&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        :root { --dark: #0c2461; --gold: #ffd32a; --success: #2ed573; }
+        body { 
+            font-family: 'Kanit', sans-serif; 
+            background: var(--dark);
+            background-image: radial-gradient(circle at center, #1e3799, #0c2461);
+            color: white; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh;
+        }
+
+        .portal-container { text-align: center; z-index: 10; }
+        h1 { font-family: 'Bungee'; font-size: 2.5rem; color: var(--gold); margin-bottom: 0; }
+
+        .btn-scan { 
+            background: var(--gold); border: 10px solid white; width: 180px; height: 180px; 
+            border-radius: 50%; font-size: 5rem; cursor: pointer; 
+            margin-top: 30px; box-shadow: 0 0 50px rgba(255, 211, 42, 0.5);
+            transition: 0.3s; animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        #reader { width: 320px; border-radius: 30px; border: 5px solid var(--gold); overflow: hidden; display: none; margin-top: 20px; }
+
+        /* ผลลัพธ์หลังสแกน */
+        #resultPage { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index: 100; justify-content: center; align-items: center; }
+        .valid-ticket { 
+            background: white; color: #333; padding: 40px; border-radius: 40px; 
+            border: 10px solid var(--success); text-align: center; width: 300px;
+        }
+        .glow-text { color: var(--success); font-weight: 800; font-size: 1.5rem; }
+    </style>
+</head>
+<body>
+
+    <div class="portal-container" id="scannerMain">
+        <h1>STAFF SCANNER</h1>
+        <p>B ball World Access Control</p>
+        <button class="btn-scan" onclick="startScan()">📷</button>
+        <div id="reader"></div>
+    </div>
+
+    <div id="resultPage">
+        <div class="valid-ticket">
+            <div style="font-size: 4rem;">🎠</div>
+            <div class="glow-text">TICKET VERIFIED</div>
+            <h2 id="scannedName" style="margin: 15px 0; color: #0c2461; text-transform: uppercase;"></h2>
+            <p style="font-size: 1.2rem;">จำนวน: <strong id="scannedQty" style="color:#ff4757;"></strong></p>
+            <button onclick="location.reload()" style="background:var(--dark); color:white; border:none; padding:12px 30px; border-radius:30px; margin-top:20px; font-weight:bold; cursor:pointer;">SCAN NEXT</button>
+        </div>
+    </div>
+
+    <script>
+        function startScan() {
+            document.getElementById('reader').style.display = 'block';
+            const html5QrCode = new Html5Qrcode("reader");
+            
+            html5QrCode.start(
+                { facingMode: "environment" }, 
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                (decodedText) => {
+                    html5QrCode.stop();
+                    // ประมวลผลข้อมูล (NAME:XXX|QTY:YYY)
+                    const dataParts = decodedText.split('|');
+                    const name = dataParts[0].split(':')[1];
+                    const qty = dataParts[1].split(':')[1];
+
+                    document.getElementById('scannedName').innerText = name;
+                    document.getElementById('scannedQty').innerText = qty + " PERSONS";
+                    document.getElementById('resultPage').style.display = 'flex';
+                    
+                    // เสียงติ๊ดสแกนสำเร็จ
+                    new Audio('https://www.soundjay.com/buttons/beep-07a.mp3').play();
+                }
+            ).catch(err => alert("เปิดกล้องไม่ได้จ้า: " + err));
+        }
+    </script>
+</body>
+</html>
